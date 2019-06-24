@@ -28,13 +28,13 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
- #include "FWCore/Utilities/interface/InputTag.h"
- #include "DataFormats/TrackReco/interface/Track.h"
- #include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "TH2.h"
+#include "TH1.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -56,7 +56,13 @@ class Phi_Eta_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> 
       ~Phi_Eta_Analyzer();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-
+      bool isGoodGlobalMuon(const pat::Muon &mu, int numGlobalMuons);
+      bool isGoodStandAloneMuon(const pat::Muon &mu, int numStandAloneMuons);
+      bool isValidPTMuon(const pat::Muon &mu, int numPTMuons);
+      bool isValidMatchedStationsMuon(const pat::Muon &mu, int numMatchedStationsMuons);
+      bool isValidNormalizedChiMuon(const pat::Muon &mu, int numNormalizedChiMuons);
+      bool isValidNumberOfHitsMuon(const pat::Muon &mu, int numOfValidHitsMuons);
+      bool isValidDBMuon(const pat::Muon &mu, int numValidDBMuons);
 
    private:
       virtual void beginJob() override;
@@ -66,7 +72,7 @@ class Phi_Eta_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> 
       // ----------member data ---------------------------
       edm::EDGetTokenT<pat::MuonCollection> muonToken_;
       unsigned int minTracks;
-      TH2D *demohisto;  //used to select what tracks to read from configuration file
+      TH1D *demohisto;  //used to select what tracks to read from configuration file
 };
 
 //
@@ -86,7 +92,7 @@ Phi_Eta_Analyzer::Phi_Eta_Analyzer(const edm::ParameterSet& iConfig)
 
 {
    edm::Service<TFileService> fs;
-   demohisto = fs->make<TH2D>("Phi_v_Eta", "Phi v. Eta;Phi;Eta", 100 , -3.14 , 3.14, 100 , -2.5 , 2.5 );
+   demohisto = fs->make<TGraph>("TightMuons", "Tight Muons", 7  , 0 , 1);
    //now do what ever initialization is needed
 
 }
@@ -110,19 +116,43 @@ void
 Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
+   int count, numGlobalMuons, numStandAloneMuons, numPTMuons, numNormalizedChiMuons, numValidHitMuons, numValidDBMuons;
+   count = numGlobalMuons = numStandAloneMuons = numPTMuons = numNormalizedChiMuons = numValidHitMuons = numValidDBMuons = 0; 
    edm::Handle<pat::MuonCollection> muons;
    iEvent.getByToken(muonToken_, muons);
    for (const pat::Muon &mu : *muons) {
-   	if (mu.pt() < 5 || !mu.isLooseMuon()) continue;
-	demohisto->Fill(mu.phi(), mu.eta());
+	if(!isGoodGlobalMuon(mu, numGlobalMuons))continue;
+	if(!isStandAloneMuon(mu, numStandAloneMuons))continue;
+	if(!isValidPTMuon(mu, numStandAloneMuons))continue;
+	if(!isValidMatchedStationsMuon(mu, numMatchedStations))continue;
+	if(!isValidNormalizedChiMuon(mu, numNormalizedChiMuons))continue;
+	if(!isValidNumberOfHitsMuons(mu, numValidHitsMuons)continue;
+	if(!isValidDBMuon(mu, numValidDBMuons))continue;
    }
+   Int_t n = 20;
+   Double_t x[n], y[n];
+   for(Int_t i=0;i<n;i++){
 
+   demohisto->Fill()
+   
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
    ESHandle<SetupData> pSetup;
    iSetup.get<SetupRecord>().get(pSetup);
 #endif
 }
-
+bool isGoodGlobalMuon(const pat::Muon &mu, int numGlobalMuons){
+	if(mu.isGlobalMuon()){numGlobalMuons++;return true;}return false;}
+bool isGoodStandAloneMuon(const pat::Muon &mu, int numStandAloneMuons){
+	if(mu.isStandAloneMuon()){numStandAloneMuons++;return true;}return false;}
+bool isValidPTMuon(const pat::Muon &mu, int numPTMuons){
+	if((mu.pt()>20) & (mu.pt()<200)){numPTMuons++;return true;}return false;}
+bool isValidMatchedStationsMuon(const pat::Muon &mu, int numMatchedStationsMuons){
+	if(mu.numberOfMatchedStations > 5){numMatchedStationsMuons++;return true;}return false;}
+bool isValidNormalizedChiMuon(const pat::Muon &mu, int numNormalizedChiMuons){
+	if(mu.globalTrack()->normalizedChi2()<2){numNormalizedChi++;return true}return false;}
+bool isValidNumberOfHitsMuon(const pat::Muon &mu, int numOfValidHitMuons){
+	if(mu.globalTrack()->hitPattern().numberOfValidMuonHits() > 0){numOfValidHitMuons++;return true;}return false;}
+bool isValidDBMuon(const pat::Muon &mu, int numDBMuons)
 
 // ------------ method called once each job just before starting event loop  ------------
 void
