@@ -4,4 +4,7 @@
 <use name="DataFormats/TrackReco"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="CommonTools/UtilAlgos"/>
+<use name="TH1.h"/>
+
+
 <flags EDM_PLUGIN="1"/>
