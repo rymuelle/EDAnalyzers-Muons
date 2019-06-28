@@ -1,16 +1,16 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("Demo")
+process = cms.Process("GitTest")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.threshold = 'INFO'
-process.MessageLogger.categories.append('Demo')
+process.MessageLogger.categories.append('GitTest')
 process.MessageLogger.cerr.INFO = cms.untracked.PSet(
         limit = cms.untracked.int32(-1)
 )
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 
 process.source = cms.Source("PoolSource",
                                 # replace 'myfile.root' with the source file you want to use
@@ -24,6 +24,6 @@ process.demo = cms.EDAnalyzer('Phi_Eta_Analyzer',
  )
 
 process.TFileService = cms.Service("TFileService",
-                                       fileName = cms.string('histodemo.root')
+                                       fileName = cms.string('TightMuonProfile.root')
                                    )
 process.p = cms.Path(process.demo)
