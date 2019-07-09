@@ -60,11 +60,18 @@ class Phi_Eta_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> 
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
-
+    
       // ----------member data ---------------------------
       edm::EDGetTokenT<pat::MuonCollection> muonToken_;
       unsigned int minTracks;
       TH1D *tightMuonProfile;
+      int nAllEvents;
+      int nGlobal;
+      int nStandAlone;
+      int nPT;
+      int nMatchedStations;
+      int nChi2;
+      int nDB;
 };
 
 //
@@ -82,6 +89,7 @@ Phi_Eta_Analyzer::Phi_Eta_Analyzer(const edm::ParameterSet& iConfig)
  :
   muonToken_(consumes<pat::MuonCollection>(edm::InputTag("slimmedMuons")))
 
+
 {
    edm::Service<TFileService> fs;
    tightMuonProfile = fs->make<TH1D>("TightMuons", "Tight Muons", 7  , 0 , 7);
@@ -89,10 +97,16 @@ Phi_Eta_Analyzer::Phi_Eta_Analyzer(const edm::ParameterSet& iConfig)
    tightMuonProfile->GetXaxis()->SetBinLabel(2, "StandAlone");
    tightMuonProfile->GetXaxis()->SetBinLabel(3, "PT");
    tightMuonProfile->GetXaxis()->SetBinLabel(4, "Stations");
-   tightMuonProfile->GetXaxis()->SetBinLabel(5, "Chi2");
-   tightMuonProfile->GetXaxis()->SetBinLabel(6, "ValidDB");
+   tightMuonProfile->GetXaxis()->SetBinLabel(5, "ValidDB");
+//   tightMuonProfile->GetXaxis()->SetBinLabel(6, "Chi2");
 // now do what ever initialization is needed
-
+    nAllEvents = 0;
+    nGlobal = 0;
+    nStandAlone = 0;
+    nPT = 0;
+    nMatchedStations = 0;
+    nChi2 = 0;
+    nDB = 0;
 }
 
 
@@ -116,13 +130,45 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
    edm::Handle<pat::MuonCollection> muons;
    iEvent.getByToken(muonToken_, muons);
    for (const pat::Muon &mu : *muons) {
-	if(mu.isGlobalMuon()){tightMuonProfile->Fill(0.5);continue;}
-	if(mu.isStandAloneMuon()){tightMuonProfile->Fill(1.5);continue;}
-	if((mu.pt()>20) && (mu.pt()<200)){tightMuonProfile->Fill(2.5);continue;}
-//	if(mu.numberOfMatchedStations() > 1){tightMuonProfile->Fill(3.5);continue;}
-//	if(mu.globalTrack()->normalizedChi2() < 10){tightMuonProfile->Fill(4.5);continue;}
-//	if(mu.dB() < 0.2){tightMuonProfile->Fill(5.5);continue;}
-   }
+	nAllEvents++;
+	if(mu.isGlobalMuon())
+	{
+		continue;
+	}
+		tightMuonProfile->Fill(0.5);
+		nGlobal++;
+	if(mu.isStandAloneMuon())
+	{
+		continue;
+	}
+		tightMuonProfile->Fill(1.5);
+		nStandAlone++;
+	if((mu.pt()>20) && (mu.pt()<200))
+	{
+		continue;}
+		tightMuonProfile->Fill(2.5);
+		nPT++;
+	if(mu.numberOfMatchedStations() > 1)
+	{
+		continue;
+	}
+		tightMuonProfile->Fill(3.5);
+		nMatchedStations++;
+
+        if(mu.dB() < 0.2)
+        {
+                continue;
+        }
+
+                tightMuonProfile->Fill(4.5);
+                nDB++;
+/*	if(mu.globalTrack()->normalizedChi2() < 10)
+	{
+		continue;
+	}
+		tightMuonProfile->Fill(5.5);
+		nChi2++;
+  */ }
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
    ESHandle<SetupData> pSetup;
    iSetup.get<SetupRecord>().get(pSetup);
@@ -138,6 +184,13 @@ Phi_Eta_Analyzer::beginJob()
 void
 Phi_Eta_Analyzer::endJob()
 {
+   std::cout << "All Events " << nAllEvents << std::endl; 
+   std::cout << "Global " << nGlobal << " | "<< (nGlobal/nAllEvents) << "%" << std::endl; 
+   std::cout << "Stand Alone "<< nStandAlone << " | "<< (nStandAlone/nAllEvents) << "%" << std::endl; 
+   std::cout << "PT " << nPT  << " | "<< (nPT/nAllEvents) << "%" << std::endl;
+   std::cout << "Matched Stations " << nMatchedStations << " | "<< (nMatchedStations/nAllEvents) << "%" << std::endl; 
+   std::cout << "DB " << nDB << " | "<< (nDB/nAllEvents) << "%" << std::endl; 
+   std::cout << "Chi2 " << nChi2 << " | "<< (nChi2/nAllEvents) << "%" << std::endl; 
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
