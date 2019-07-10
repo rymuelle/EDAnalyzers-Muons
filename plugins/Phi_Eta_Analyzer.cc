@@ -37,6 +37,9 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TH1D.h"
+
+#include <iostream>
+#include <iomanip>
 //
 // class declaration
 //
@@ -65,13 +68,14 @@ class Phi_Eta_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> 
       edm::EDGetTokenT<pat::MuonCollection> muonToken_;
       unsigned int minTracks;
       TH1D *tightMuonProfile;
-      int nAllEvents;
-      int nGlobal;
-      int nStandAlone;
-      int nPT;
-      int nMatchedStations;
-      int nChi2;
-      int nDB;
+      float nAllEvents;
+      float nGlobal;
+      float nStandAlone;
+      float nPT;
+      float nMatchedStations;
+      float nChi2;
+      float nDB;
+      float nTightMuon;
 };
 
 //
@@ -98,15 +102,16 @@ Phi_Eta_Analyzer::Phi_Eta_Analyzer(const edm::ParameterSet& iConfig)
    tightMuonProfile->GetXaxis()->SetBinLabel(3, "PT");
    tightMuonProfile->GetXaxis()->SetBinLabel(4, "Stations");
    tightMuonProfile->GetXaxis()->SetBinLabel(5, "ValidDB");
-//   tightMuonProfile->GetXaxis()->SetBinLabel(6, "Chi2");
+   tightMuonProfile->GetXaxis()->SetBinLabel(6, "Tight");
 // now do what ever initialization is needed
-    nAllEvents = 0;
-    nGlobal = 0;
-    nStandAlone = 0;
-    nPT = 0;
-    nMatchedStations = 0;
-    nChi2 = 0;
-    nDB = 0;
+    nAllEvents = 0.0f;
+    nGlobal = 0.0f;
+    nStandAlone = 0.0f;
+    nPT = 0.0f;
+    nMatchedStations = 0.0f;
+    nChi2 = 0.0f;
+    nDB = 0.0f;
+    nTightMuon = 0.0f;
 }
 
 
@@ -131,6 +136,13 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
    iEvent.getByToken(muonToken_, muons);
    for (const pat::Muon &mu : *muons) {
 	nAllEvents++;
+/*	
+	if(mu.isTightMuon())
+	{	
+		tightMuonProfile->Fill(5.5);
+		nTightMuon++;
+	}
+*/
 	if(mu.isGlobalMuon())
 	{
 		continue;
@@ -148,7 +160,7 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 		continue;}
 		tightMuonProfile->Fill(2.5);
 		nPT++;
-	if(mu.numberOfMatchedStations() > 1)
+	if(mu.numberOfMatchedStations() >= 2)
 	{
 		continue;
 	}
@@ -168,7 +180,8 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	}
 		tightMuonProfile->Fill(5.5);
 		nChi2++;
-  */ }
+  */
+ }
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
    ESHandle<SetupData> pSetup;
    iSetup.get<SetupRecord>().get(pSetup);
@@ -184,13 +197,17 @@ Phi_Eta_Analyzer::beginJob()
 void
 Phi_Eta_Analyzer::endJob()
 {
-   std::cout << "All Events " << nAllEvents << std::endl; 
-   std::cout << "Global " << nGlobal << " | "<< (nGlobal/nAllEvents) << "%" << std::endl; 
-   std::cout << "Stand Alone "<< nStandAlone << " | "<< (nStandAlone/nAllEvents) << "%" << std::endl; 
-   std::cout << "PT " << nPT  << " | "<< (nPT/nAllEvents) << "%" << std::endl;
-   std::cout << "Matched Stations " << nMatchedStations << " | "<< (nMatchedStations/nAllEvents) << "%" << std::endl; 
-   std::cout << "DB " << nDB << " | "<< (nDB/nAllEvents) << "%" << std::endl; 
-   std::cout << "Chi2 " << nChi2 << " | "<< (nChi2/nAllEvents) << "%" << std::endl; 
+   std::cout << std::fixed;
+   std::cout << std::setprecision(2);
+   std::cout << "All Events " << nAllEvents << std::endl;
+   std::cout << "Muon Conditions: " << std::endl; 
+   std::cout << "Global             " << nGlobal << " | "<< ((nGlobal/nAllEvents)*100) << "%" << std::endl; 
+   std::cout << "Stand Alone        "<< nStandAlone << " | "<< ((nStandAlone/nAllEvents)*100) << "%" << std::endl; 
+   std::cout << "Tranverse Momentum " << nPT  << " | "<< ((nPT/nAllEvents)*100) << "%" << std::endl;
+   std::cout << "Matched Stations   " << nMatchedStations << " | "<< ((nMatchedStations/nAllEvents)*100) << "%" << std::endl; 
+   std::cout << "Tranverse Impact   " << nDB << " | "<< ((nDB/nAllEvents)*100) << "%" << std::endl; 
+   std::cout << "Chi2               " << nChi2 << " | "<< ((nChi2/nAllEvents)*100) << "%" << std::endl << std::endl; 
+// std::cout << "Tight Muons        " << nTightMuon << " | " << ((nTightMuon/nAllEvents)*100) << "%" << std::endl;
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
