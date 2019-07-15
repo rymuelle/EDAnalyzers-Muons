@@ -5,3 +5,11 @@ edmDumpEventContent root://cmsxrootd.fnal.gov///store/data/Run2018D/SingleMuon/A
 vector<reco::Muon>                    "ALCARECOMuAlCalIsolatedMu"   "SelectedMuons"   "RECO"
 
  dasgoclient -query="file dataset=/SingleMuon/Run2018D-MuAlCalIsolatedMu-PromptReco-v2/ALCARECO"
+
+ For crab:
+
+cmsenv
+source /cvmfs/cms.cern.ch/crab3/crab.sh
+voms-proxy-init -voms cms
+
+crab submit -c <crab_cfg>.py --dryrun
