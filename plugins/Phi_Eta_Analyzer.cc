@@ -103,6 +103,10 @@ Phi_Eta_Analyzer::Phi_Eta_Analyzer(const edm::ParameterSet& iConfig)
    tightMuonProfile->GetXaxis()->SetBinLabel(4, "Stations");
    tightMuonProfile->GetXaxis()->SetBinLabel(5, "ValidDB");
    tightMuonProfile->GetXaxis()->SetBinLabel(6, "Tight");
+
+   //make a th2f for phi and eta
+   th2f_phi_eta = fs->make<TH2f>("th2f_phi_eta", "Tight Muons;#phi;#eta", 100, -3.14,3.14, 100, -2.5 , 2.5);
+
 // now do what ever initialization is needed
     nAllEvents = 0.0f;
     nGlobal = 0.0f;
@@ -174,6 +178,11 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
                 tightMuonProfile->Fill(4.5);
                 nDB++;
+
+  th2f_phi_eta->Fill(mu.phi(), mu.eta());
+
+  std::cout << "chi2: " << mu.globalTrack()->normalizedChi2() << std::endl;
+  
 /*	if(mu.globalTrack()->normalizedChi2() < 10)
 	{
 		continue;
