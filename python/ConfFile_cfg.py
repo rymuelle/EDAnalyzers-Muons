@@ -20,7 +20,7 @@ process.source = cms.Source("PoolSource",
                             )
 
 process.demo = cms.EDAnalyzer('Phi_Eta_Analyzer',
-        muons = cms.InputTag("slimmedMuons","", "RECO")
+        muons = cms.InputTag("ALCARECOMuAlCalIsolatedMu","SelectedMuons", "RECO")
  )
 
 process.TFileService = cms.Service("TFileService",
