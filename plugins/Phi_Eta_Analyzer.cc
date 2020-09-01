@@ -93,7 +93,7 @@ class Phi_Eta_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> 
 //
 Phi_Eta_Analyzer::Phi_Eta_Analyzer(const edm::ParameterSet& iConfig)
  :
-  muonToken_(consumes<reco::MuonCollection>(edm::InputTag("muons1Leg")))
+  muonToken_(consumes<reco::MuonCollection>(edm::InputTag("ALCARECOMuAlGlobalCosmics","SelectedMuons")))
 
 
 {
@@ -150,7 +150,7 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   bool isUp = false;
   reco::TrackRef outertrack = mu.outerTrack();
   if (outertrack.isNonnull()) {
-    std::cout << "ok " << std::endl;
+    std::cout << "ok " << outertrack->phi() << std::endl;
     if (outertrack->phi() > 0) isUp = true;
   }
   std::cout << isUp << std::endl;
