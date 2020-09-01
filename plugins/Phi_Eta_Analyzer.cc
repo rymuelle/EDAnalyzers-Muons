@@ -152,6 +152,7 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 */
   std::cout << mu.pt() << std::endl;
 
+  //https://github.com/cms-mual/Alignment/blob/CMSSW_10_1_0/MuonAlignmentAlgorithms/src/MuonResidualsFromTrack.cc#L72
   bool isUp = false;
   reco::TrackRef outertrack = mu.outerTrack();
   if (outertrack.isNonnull()) {
