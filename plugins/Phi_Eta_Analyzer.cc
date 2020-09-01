@@ -37,7 +37,9 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TH1D.h"
-
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
 #include <iostream>
 #include <iomanip>
 //
@@ -144,6 +146,16 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	}
 */
   std::cout << mu.pt() << std::endl;
+
+  bool isUp = false;
+  reco::TrackRef outertrack = mu.outerTrack();
+  if (outertrack.isNonnull()) {
+    std::cout << "ok " << std::endl;
+    if (outertrack->phi() > 0) isUp = true;
+  }
+  std::cout << isUp << std::endl;
+
+  //std::cout << mu.outerTrack()->pt() << std::endl;
 	if(mu.isGlobalMuon())
 	{
 		continue;
