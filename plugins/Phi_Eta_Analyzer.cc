@@ -40,6 +40,11 @@
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
+
+#include "TrackingTools/TrackAssociator/interface/DetIdAssociator.h"
+#include "DataFormats/GeometrySurface/interface/Surface.h"
+
+
 #include <iostream>
 #include <iomanip>
 //
@@ -150,8 +155,30 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   bool isUp = false;
   reco::TrackRef outertrack = mu.outerTrack();
   if (outertrack.isNonnull()) {
-    std::cout << "ok " << outertrack->phi() << std::endl;
+    std::cout << "ok " << outertrack->recHitsSize() << std::endl;
     if (outertrack->phi() > 0) isUp = true;
+    for (trackingRecHit_iterator hit = outertrack->recHitsBegin(); hit != outertrack->recHitsEnd(); ++hit) {
+      if((*hit)->isValid()) {
+        std::cout << "valid local position " << (*hit)->localPosition() << std::endl;
+        DetId hitId  = (*hit)->geographicalId();
+        if ( hitId.det() == DetId::Tracker ) {
+          std::cout << "Tracker Hit " << " is found. Add to refit. Dimension: " << (*hit)->dimension() << std::endl;
+        } else if ( hitId.det() == DetId::Muon ){
+          std::cout << "Muon Hit "  << " is found. We do not add muon hits to refit. Dimension: " << (*hit)->dimension() << std::endl;
+          if ( hitId.subdetId() == MuonSubdetId::DT ) {
+            const DTChamberId chamberId(hitId.rawId());
+            std::cout << "Muon Hit in DT wheel " << chamberId.wheel() << " station " << chamberId.station() << " sector " << chamberId.sector() << "." << std::endl;
+          } else if ( hitId.subdetId() == MuonSubdetId::CSC ) {
+            const CSCDetId cscDetId(hitId.rawId());
+            std::cout << "Muon hit in CSC endcap " << cscDetId.endcap() << " station " << cscDetId.station() << " ring " << cscDetId.ring() << " chamber " << cscDetId.chamber() << "." << std::endl;
+          } else if ( hitId.subdetId() == MuonSubdetId::RPC ) {
+            std::cout << "Muon Hit in RPC" << std::endl;
+          } else {
+            std::cout << "Warning! Muon Hit not in DT or CSC or RPC" << std::endl;
+          }
+        }
+      }
+    }
   }
   std::cout << isUp << std::endl;
 
