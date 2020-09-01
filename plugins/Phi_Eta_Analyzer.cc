@@ -157,6 +157,7 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   if (outertrack.isNonnull()) {
     std::cout << "ok " << outertrack->recHitsSize() << std::endl;
     if (outertrack->phi() > 0) isUp = true;
+    std::cout << " outer pos " << outertrack->outerPosition() << " outer mom " << outertrack->outerMomentum() << std::endl;
     for (trackingRecHit_iterator hit = outertrack->recHitsBegin(); hit != outertrack->recHitsEnd(); ++hit) {
       if((*hit)->isValid()) {
         std::cout << "valid local position " << (*hit)->localPosition() << std::endl;
