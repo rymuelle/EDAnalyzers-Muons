@@ -31,7 +31,7 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
-#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -50,7 +50,7 @@
 // This will improve performance in multithreaded jobs.
 
 
-using pat::MuonCollection;
+using reco::MuonCollection;
 
 class Phi_Eta_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
    public:
@@ -65,7 +65,7 @@ class Phi_Eta_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> 
       virtual void endJob() override;
     
       // ----------member data ---------------------------
-      edm::EDGetTokenT<pat::MuonCollection> muonToken_;
+      edm::EDGetTokenT<reco::MuonCollection> muonToken_;
       unsigned int minTracks;
       TH1D *tightMuonProfile;
       float nAllEvents;
@@ -91,7 +91,7 @@ class Phi_Eta_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> 
 //
 Phi_Eta_Analyzer::Phi_Eta_Analyzer(const edm::ParameterSet& iConfig)
  :
-  muonToken_(consumes<pat::MuonCollection>(edm::InputTag("slimmedMuons")))
+  muonToken_(consumes<reco::MuonCollection>(edm::InputTag("muons1Leg")))
 
 
 {
@@ -131,10 +131,10 @@ Phi_Eta_Analyzer::~Phi_Eta_Analyzer()
 void
 Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-   using pat::MuonCollection;
-   edm::Handle<pat::MuonCollection> muons;
+   using reco::MuonCollection;
+   edm::Handle<reco::MuonCollection> muons;
    iEvent.getByToken(muonToken_, muons);
-   for (const pat::Muon &mu : *muons) {
+   for (const reco::Muon &mu : *muons) {
 	nAllEvents++;
 /*	
 	if(mu.isTightMuon())
@@ -143,6 +143,7 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 		nTightMuon++;
 	}
 */
+  std::cout << mu.pt() << std::endl;
 	if(mu.isGlobalMuon())
 	{
 		continue;
@@ -160,7 +161,7 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 		continue;}
 		tightMuonProfile->Fill(2.5);
 		nPT++;
-	if(mu.numberOfMatchedStations() >= 2)
+/*	if(mu.numberOfMatchedStations() >= 2)
 	{
 		continue;
 	}
@@ -174,7 +175,7 @@ Phi_Eta_Analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
                 tightMuonProfile->Fill(4.5);
                 nDB++;
-/*	if(mu.globalTrack()->normalizedChi2() < 10)
+	if(mu.globalTrack()->normalizedChi2() < 10)
 	{
 		continue;
 	}
